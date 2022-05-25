@@ -1,10 +1,17 @@
 """
-This is the version 1 of the Gas Price program
+This is the version 1.0 of the Gas Price program
 The aim of this program download and display the
 price of Gasoline in French Gas Station
 
 Author : Aymane
 """
+# TODO: Fill the "README.md" with the needed informations => V1.2
+# TODO: The information of the prices, station, adress etc... need to be displayed in a GUI => V1.1
+# TODO: Need to make the traitement of the informations faster (rechearch of the faster way) => V1.3?
+# TODO: Improve the UI => 1.4?
+# TODO: In the V1.1 the sofware need to give the user the opportunity to choose the town they are intersted in
+# TODO: In the V2.0 the software need to create a database to store the information
+# TODO: In the V2.0 the software need to give the choice to the user if they want only to display the data or create a BDD to store the info also
 
 import tkinter.messagebox
 from tkinter import *
@@ -12,9 +19,6 @@ import wget
 import os
 from gaspricefunctions import *
 from FileProcessing import *
-
-#defining the url to download from
-url = "https://donnees.roulez-eco.fr/opendata/instantane"
 
 #creating the main windowsdow and storing the windowsdow object in 'windows'
 Main_windows=Tk()

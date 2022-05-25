@@ -57,12 +57,14 @@ def GasPriceVerification():
                 lowest_price = price
                 b_lowest_price_info_ville = b_name
 
-# TODO: this informations need to be in its proper window
         # Print in the command line the value of the lowest price and station
         print('le prix le plus petit dans votre ville est :',lowest_price)
         print('les informations de la ville: \n',b_lowest_price_info_ville)
+
+        info_lowest_price = '\n' + "The lowest price in your town is :" + lowest_price
         # messagebox for informing the user that the data verified
-        tkinter.messagebox.showinfo("DATA VERIFICATION PROCESS STATUS","the data was verified, the informations of the lowest price gas in the console")
+        tkinter.messagebox.showinfo("Congratulation: lowest price found",info_lowest_price)
     except:
+            erreur_message = '\t' + '\t' +  '\t' + "ERROR" + '\n' +  "you need to download the official data before verifying the lowest price"
             # messagebox for informing the user that this no data to verify and need to download the data first
-            tkinter.messagebox.showinfo("DATA VERIFICATION PROCESS STATUS","ERROR: you need to download the data before verifying the lowest price")
+            tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS",erreur_message)
