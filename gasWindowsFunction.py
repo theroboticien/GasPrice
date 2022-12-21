@@ -22,7 +22,7 @@ def postalCodeEntryFunc():
     print (resp)
 
     if(resp.status_code != 200) : 
-        tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS failed","le code postal utilisé ne représente aucune ville en France \n veuillez entrez un autre code")
+        tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS failed","le code postal utilisé ne représente à aucune ville en France \n veuillez entrez un autre code")
         postalCodeDisplayError()
             
     else :
