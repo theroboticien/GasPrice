@@ -1,20 +1,21 @@
 """
-This is the version 1.0 of the File Processing functions used in GasPrice Project
+This file describs all the functions used for different files management :
++ deleteFile
++ extractZipFile
 
 Author : Aymane
 """
 import tkinter.messagebox
 from tkinter import *
-import wget
 import zipfile
 import os
 
-def delete_file(location , file):
+def deleteFile(location , file):
         path = os.path.join(location,file)
         # Remove the file
         os.remove(path)
 
-def extract_zip_file(webdownload):
+def extractZipFile(webdownload):
         try:
             with zipfile.ZipFile(webdownload) as z:
                 z.extractall()
