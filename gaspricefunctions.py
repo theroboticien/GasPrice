@@ -14,7 +14,13 @@ from FileProcessing import *
 import wget
 import os
 import tkinter.messagebox
+import requests
 
+
+def verificatioPostalCode(arg):
+    # Make a GET CAll to verify if the postal code is connected to a city
+    url = 'https://apicarto.ign.fr/api/codes-postaux/communes/' + str(arg)
+    globalVariable.resp = requests.get(url)
 
 def GasPriceDowloadandExtract():
     # defining the url to download from
