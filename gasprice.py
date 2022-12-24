@@ -6,7 +6,6 @@ price of Gasoline in French Gas Station
 Author : Aymane
 """
 # TODO: Fill the "README.md" with the needed informations
-# TODO: The information of the prices, station, adress etc... need to be displayed in a GUI 
 # TODO: Need to make the traitement of the informations faster (rechearch of the faster way) 
 # TODO: Improve the UI
 # TODO: In the V1.1 the sofware need to give the user the opportunity to choose the town they are intersted in
