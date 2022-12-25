@@ -6,6 +6,8 @@ This file describ all the function used for the price verification process :
 Author : Aymane
 """
 
+# TODO : correct the pricing issue when you find a second gas station that have a lower price of gazoling but still give the price of the others that come from another station
+
 import globalVariable
 from tkinter import ttk
 from tkinter import *
@@ -95,7 +97,6 @@ def gasPriceDisplay(gasStationfound, lowest_price, priceE10, priceE85, priceSP98
 
 
 def GasPriceVerification():
-# TODO : print the full information of the gas station when finding the lowest price
 
         # initialising the used variable in this function 
         gasStationfound = False
@@ -117,8 +118,9 @@ def GasPriceVerification():
             from gasWindowsFunction import postalCodeEntryFunc
             postalCodeEntryFunc()
 
+        # TODO : when do reactivate this function
         # Download the most recent data
-        GasPriceDowloadandExtract()
+        # GasPriceDowloadandExtract()
 
         # cp_orig = postalCodeEntry
         location = os.getcwd()
@@ -204,6 +206,7 @@ def GasPriceVerification():
                 
         gasPriceDisplay(gasStationfound, lowest_price, priceE10, priceE85, priceSP98, priceSP95)
         gasStationDisplay(getAddressGasStation(lon,lat))
+        gasPriceDisplayMainWindow(gasStationfound, lowest_price, priceE10, priceE85, priceSP98, priceSP95)
 
 
 def postalCodeDisplay(): 
@@ -226,3 +229,36 @@ def gasStationDisplay(arg):
     gasStationLabel.grid(column=0, row=1, sticky=tkinter.W, padx=0, pady=0)
     gasStationEntryLabel = ttk.Label(globalVariable.Main_windows, text=str(arg))
     gasStationEntryLabel.grid(column=0, row=2, sticky=tkinter.W, padx=80, pady=0)
+
+def gasPriceDisplayMainWindow(gasStationfound, lowest_price, priceE10, priceE85, priceSP98, priceSP95) :
+    
+    if(gasStationfound == True) : 
+
+        # message to informing the user of the lowest price for Gazole
+        prixGazole = "Le prix du Gasole le plus petit dans votre region est :" + lowest_price
+        gasStationLabel = ttk.Label(globalVariable.Main_windows, text=prixGazole)
+        gasStationLabel.grid(column=0, row=3, sticky=tkinter.W, padx=0, pady=0)
+            
+        # message to informing the user of the lowest price for E10
+        if priceE10 != None :
+            prixE10 = "Le prix du E10 le plus petit dans votre region est :" + priceE10
+            gasStationLabel = ttk.Label(globalVariable.Main_windows, text=prixE10)
+            gasStationLabel.grid(column=0, row=4, sticky=tkinter.W, padx=0, pady=0)
+           
+        # message to informing the user of the lowest price for E85
+        if priceE85 != None :
+            prixE85 = "Le prix du E85 le plus petit dans votre region est :" + priceE85
+            gasStationLabel = ttk.Label(globalVariable.Main_windows, text=prixE85)
+            gasStationLabel.grid(column=0, row=5, sticky=tkinter.W, padx=0, pady=0)
+
+        # message to informing the user of the lowest price for SP98
+        if priceSP98 != None :
+            prixSP98 = "Le prix du SP98 le plus petit dans votre region est :" + priceSP98
+            gasStationLabel = ttk.Label(globalVariable.Main_windows, text=prixSP98)
+            gasStationLabel.grid(column=0, row=6, sticky=tkinter.W, padx=0, pady=0)
+            
+        # message to informing the user of the lowest price for SP95
+        if priceSP95 != None :
+            prixSP95 = "Le prix du SP98 le plus petit dans votre region est :" + priceSP95
+            gasStationLabel = ttk.Label(globalVariable.Main_windows, text=prixSP95)
+            gasStationLabel.grid(column=0, row=7, sticky=tkinter.W, padx=0, pady=0)
