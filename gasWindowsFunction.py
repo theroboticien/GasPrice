@@ -7,6 +7,7 @@ Author : Aymane
 
 import tkinter
 import globalVariable
+import gasWindowsFunction
 from gaspricefunctions import postalCodeDisplay
 from gaspricefunctions import postalCodeDisplayError
 from gaspricefunctions import verificatioPostalCode
@@ -35,15 +36,5 @@ def postalCodeEntryFunc():
         postalCodeDisplay()
 
         response_dict = globalVariable.resp.json()
-        
-        """
-        For Débuging
-        print(response_dict) 
-        # Code for debuging 
-        i = 0
-        for element in response_dict :
-            print(response_dict[i])
-            i = i + 1
-        """
         
         

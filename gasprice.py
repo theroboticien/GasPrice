@@ -13,14 +13,18 @@ Author : Aymane
 # TODO: In the V2.0 the software need to give the choice to the user if they want only to display the data or create a BDD to store the info also
 
 
+# TODO: Need to display the location of the Gas Station using a call to the API 
+
 import globalVariable
+import gaspricefunctions
 import gasWindowsFunction
 from tkinter import *
 from gaspricefunctions import *
 from FileProcessing import *
 from globalVariable import *
-from gasWindowsFunction import *
+from gasWindowsFunction import postalCodeEntryFunc
 
+globalVariable.postalCodeEntry = None
 
 # creating the main windowsdow and storing the windowsdow object in 'windows'
 globalVariable.Main_windows=Tk()
