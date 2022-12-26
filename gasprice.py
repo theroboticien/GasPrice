@@ -13,7 +13,7 @@ Author : Aymane
 # TODO: In the V2.0 the software need to give the choice to the user if they want only to display the data or create a BDD to store the info also
 
 
-# TODO: Need to display the location of the Gas Station using a call to the API 
+# TODO: Need to give the user a choice of the fuel they want to loot for
 
 import globalVariable
 import gaspricefunctions

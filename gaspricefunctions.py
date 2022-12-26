@@ -38,7 +38,7 @@ def getAddressGasStation(lon, lat):
     # Make a GET CAll to get the adresse of the Gas Station from the French gouv officiel API
     url = 'https://api-adresse.data.gouv.fr/reverse/?lon=' + lon + '&lat=' + lat
     resp = requests.get(url)
-   
+
     # Take the json and return a string
     data = json.dumps(resp.json())
 
@@ -75,7 +75,7 @@ def gasPriceDisplay(gasStationfound, lowest_price, priceE10, priceE85, priceSP98
         # message to informing the user of the lowest price for E10
         if priceE10 != None :
             info_lowest_price = info_lowest_price + '\n' + "Le prix du E10 le plus petit dans votre region est :" + priceE10
-           
+    
         # message to informing the user of the lowest price for E85
         if priceE85 != None :
             info_lowest_price = info_lowest_price + '\n' + "Le prix du E85 le plus petit dans votre region est :" + priceE85
@@ -118,7 +118,7 @@ def GasPriceVerification():
             from gasWindowsFunction import postalCodeEntryFunc
             postalCodeEntryFunc()
 
-        # TODO : when do reactivate this function
+        # TODO : Reactivate this function when debuging done
         # Download the most recent data
         # GasPriceDowloadandExtract()
 
@@ -131,7 +131,7 @@ def GasPriceVerification():
         try : 
             # Reading the data inside the xml file to a variable under the name  data
             with open(fileLocation, 'r') as f:
-             data = f.read()
+                data = f.read()
         except :
             # messagebox for informing the user that their is no file containing the information needed
             tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS","Aucun fichier avec les informations des prix n'a été télécharger \nmerci de bien vouloir télécharger les prix")
@@ -161,11 +161,11 @@ def GasPriceVerification():
                 dataLon = b_name.get('longitude')
                 datalat = b_name.get('latitude')
                 b_price = b_name.find('prix')
-              
+        
                 if b_price == None:
-                  # Extracting the data stored in a specific attribute of the `child` tag
-                  b_name= b_name.find_next('pdv')  
-                  continue
+                    # Extracting the data stored in a specific attribute of the `child` tag
+                    b_name= b_name.find_next('pdv')  
+                    continue
 
                 # searching for the price of Gazole
                 if b_price.get('nom') == "Gazole" :
@@ -175,56 +175,63 @@ def GasPriceVerification():
                     # initialisation of next tag to get prices
                     bPriceNext = b_price.find_next('prix') 
 
+                    priceE10 = None
+                    priceE85 = None
+                    priceSP98 = None
+                    priceSP95 = None
+
                     for i in range(1,4) :
-                       
-                       # searching for the price of E10 
-                       if(bPriceNext.get('nom') == 'E10') :    
-                        priceE10 = bPriceNext.get('valeur')
-                       
-                       # searching for the price of E85 
-                       elif(bPriceNext.get('nom') == 'E85') :    
-                        priceE85 = bPriceNext.get('valeur')
+                    
+                        # searching for the price of E10 
+                        if(bPriceNext.get('nom') == 'E10') :    
+                            priceE10 = bPriceNext.get('valeur')
+                    
+                        # searching for the price of E85 
+                        if(bPriceNext.get('nom') == 'E85') :    
+                            priceE85 = bPriceNext.get('valeur')
 
-                       # searching for the price of E85 
-                       elif(bPriceNext.get('nom') == 'SP98') :    
-                        priceSP98 = bPriceNext.get('valeur')
+                        # searching for the price of E85 
+                        if(bPriceNext.get('nom') == 'SP98') :    
+                            priceSP98 = bPriceNext.get('valeur')
 
-                       # searching for the price of SP95 
-                       elif(bPriceNext.get('nom') == 'SP95') :    
-                        priceSP99 = bPriceNext.get('valeur')
+                        # searching for the price of SP95 
+                        if(bPriceNext.get('nom') == 'SP95') :    
+                            priceSP95 = bPriceNext.get('valeur')
 
-                       # jump to the next price
-                       bPriceNext = bPriceNext.find_next('prix')
-                             
+                        # jump to the next price
+                        bPriceNext = bPriceNext.find_next('prix')
+
             # At each iteration we verify the lowest price
             # when the lowest price is found wa save the price and the longitude and latitude of the gas Station
             if lowest_price > price :
                 lowest_price = price
                 b_lowest_price_info_ville = b_name
                 lon = dataLon[0:1] + '.' + dataLon[1:]
-                lat = datalat[0:2] + '.' + datalat[2:]
-                
+                lat = datalat[0:2] + '.' + datalat[2:]       
+
         gasPriceDisplay(gasStationfound, lowest_price, priceE10, priceE85, priceSP98, priceSP95)
+
+        # TODO : some lon and lat information do not return an adresse (search for a solution to fix this) or at leat do some exception management
         gasStationDisplay(getAddressGasStation(lon,lat))
         gasPriceDisplayMainWindow(gasStationfound, lowest_price, priceE10, priceE85, priceSP98, priceSP95)
 
 
 def postalCodeDisplay(): 
-     # Displaying the postal code of the user
+    # Displaying the postal code of the user
     postalCodeLabel = ttk.Label(globalVariable.Main_windows, text="Votre code postal:")
     postalCodeLabel.grid(column=0, row=0, sticky=tkinter.W, padx=5, pady=20)
     postalCodeEntryLabel = ttk.Label(globalVariable.Main_windows, text=str(globalVariable.postalCodeEntry)+ "                          ")
     postalCodeEntryLabel.grid(column=0, row=0, sticky=tkinter.W, padx=105, pady=20)
 
 def postalCodeDisplayError(): 
-     # Displaying the postal code of the user
+    # Displaying the postal code of the user
     postalCodeLabel = ttk.Label(globalVariable.Main_windows, text="Votre code postal:")
     postalCodeLabel.grid(column=0, row=0, sticky=tkinter.W, padx=5, pady=20)
     postalCodeEntryLabel = ttk.Label(globalVariable.Main_windows, text='code non valide')
     postalCodeEntryLabel.grid(column=0, row=0, sticky=tkinter.W, padx=105, pady=20)
 
 def gasStationDisplay(arg): 
-     # Displaying the postal code of the user
+    # Displaying the postal code of the user
     gasStationLabel = ttk.Label(globalVariable.Main_windows, text="L'adresse de la sation d'essence est:")
     gasStationLabel.grid(column=0, row=1, sticky=tkinter.W, padx=0, pady=0)
     gasStationEntryLabel = ttk.Label(globalVariable.Main_windows, text=str(arg))
@@ -244,7 +251,7 @@ def gasPriceDisplayMainWindow(gasStationfound, lowest_price, priceE10, priceE85,
             prixE10 = "Le prix du E10 le plus petit dans votre region est :" + priceE10
             gasStationLabel = ttk.Label(globalVariable.Main_windows, text=prixE10)
             gasStationLabel.grid(column=0, row=4, sticky=tkinter.W, padx=0, pady=0)
-           
+            
         # message to informing the user of the lowest price for E85
         if priceE85 != None :
             prixE85 = "Le prix du E85 le plus petit dans votre region est :" + priceE85
