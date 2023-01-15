@@ -6,7 +6,6 @@ price of Gasoline in French Gas Station
 Author : Aymane
 """
 # TODO: Fill the "README.md" with the needed informations
-# TODO: The information of the prices, station, adress etc... need to be displayed in a GUI 
 # TODO: Need to make the traitement of the informations faster (rechearch of the faster way) 
 # TODO: Improve the UI
 # TODO: In the V1.1 the sofware need to give the user the opportunity to choose the town they are intersted in
@@ -14,14 +13,18 @@ Author : Aymane
 # TODO: In the V2.0 the software need to give the choice to the user if they want only to display the data or create a BDD to store the info also
 
 
+# TODO: Need to give the user a choice of the fuel they want to loot for
+
 import globalVariable
+import gaspricefunctions
 import gasWindowsFunction
 from tkinter import *
 from gaspricefunctions import *
 from FileProcessing import *
 from globalVariable import *
-from gasWindowsFunction import *
+from gasWindowsFunction import postalCodeEntryFunc
 
+globalVariable.postalCodeEntry = None
 
 # creating the main windowsdow and storing the windowsdow object in 'windows'
 globalVariable.Main_windows=Tk()
