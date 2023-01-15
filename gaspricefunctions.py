@@ -94,14 +94,14 @@ def GasPriceVerification():
             tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS",erreur_message)
 
 def postalCodeDisplay(): 
-     # Displaying the postal code of the user
+    # Displaying the postal code of the user
     postalCodeLabel = ttk.Label(globalVariable.Main_windows, text="Votre code postal:")
     postalCodeLabel.grid(column=0, row=0, sticky=tkinter.W, padx=5, pady=20)
     postalCodeEntryLabel = ttk.Label(globalVariable.Main_windows, text=str(globalVariable.postalCodeEntry)+ "                          ")
     postalCodeEntryLabel.grid(column=0, row=0, sticky=tkinter.W, padx=105, pady=20)
 
 def postalCodeDisplayError(): 
-     # Displaying the postal code of the user
+    # Displaying the postal code of the user
     postalCodeLabel = ttk.Label(globalVariable.Main_windows, text="Votre code postal:")
     postalCodeLabel.grid(column=0, row=0, sticky=tkinter.W, padx=5, pady=20)
     postalCodeEntryLabel = ttk.Label(globalVariable.Main_windows, text='code non valide')
