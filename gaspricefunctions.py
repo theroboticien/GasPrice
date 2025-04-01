@@ -138,7 +138,7 @@ def GasPriceVerification():
             tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS","Aucun fichier avec les informations des prix n'a été télécharger \nmerci de bien vouloir télécharger les prix")
 
         # Passing the stored data inside the beautifulsoup parser
-        bs_data = BeautifulSoup(data, 'xml')
+        bs_data = BeautifulSoup(data,  'xml')
         cp_orig = str(globalVariable.postalCodeEntry)
 
         # Using find() to extract attributes of the first instance of the tag
