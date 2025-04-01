@@ -49,7 +49,7 @@ GasPriceButton=Button(globalVariable.Main_windows,text="Verify Price", width=11,
 GasPriceButton.place(x=10,y=400)
 
 # exit button
-exit_button = Button(globalVariable.Main_windows,text="Exit",width=12,height=2,command=lambda:globalVariable.Main_windows.quit())
+exit_button = Button(globalVariable.Main_windows,text="Exit" ,width=12,height=2,command=lambda:globalVariable.Main_windows.quit())
 # setting the placement of the exit button on int the software window
 exit_button.place(x=300,y=400)
 
