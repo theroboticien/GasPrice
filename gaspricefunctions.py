@@ -63,6 +63,7 @@ def GasPriceDowloadandExtract():
     location = os.getcwd()
     file = webdownload_zipfile
 
+
     # function to delete file
     deleteFile(location, file)
 
@@ -120,17 +121,17 @@ def GasPriceVerification():
 
         # TODO : Reactivate this function when debuging done
         # Download the most recent data
-        # GasPriceDowloadandExtract()
+        GasPriceDowloadandExtract()
 
         # cp_orig = postalCodeEntry
         location = os.getcwd()
 
         # Getting the downloaded file from the current directory
-        fileLocation = location + '\\' + 'PrixCarburants_instantane.xml'
+        fileLocation = location + '/' + 'PrixCarburants_instantane.xml'
 
         try : 
             # Reading the data inside the xml file to a variable under the name  data
-            with open(fileLocation, 'r') as f:
+            with open(fileLocation, 'r', encoding='ISO-8859-1') as f:
                 data = f.read()
         except :
             # messagebox for informing the user that their is no file containing the information needed
