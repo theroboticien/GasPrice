@@ -20,7 +20,7 @@ This Python program retrieves the lowest fuel prices (starting with Diesel) from
 
 ## Usage
 1. Run the program.
-    '''bash
+    ```bash
     py gasprice.py
     
 2. Dowload the latest price using the "Download Prices" Button
