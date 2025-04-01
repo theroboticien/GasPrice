@@ -139,7 +139,7 @@ def GasPriceVerification():
 
         # Passing the stored data inside the beautifulsoup parser
         bs_data = BeautifulSoup(data, 'xml')
-        cp_orig = str(globalVariable.postalCodeEntry )
+        cp_orig = str(globalVariable.postalCodeEntry)
 
         # Using find() to extract attributes of the first instance of the tag
         b_name = bs_data.find('pdv')
