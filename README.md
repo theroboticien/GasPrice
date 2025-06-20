@@ -1,16 +1,6 @@
 
 # Gas Price Finder ⛽🇫🇷
 
-
-## Table of Contents
-
-  - [Overview](Overview)
-  - [Features](Features)
-  - [Installation](Installation)
-  - [Usage](Usage)
-  - [Future Enhancements (Roadmap)](Future Enhancements (Roadmap))
-  - [License](License)
-
 ## Overview
 
 Welcome to **Gas Price Finder** – your essential Python desktop application for discovering the most affordable fuel options across France\! This intuitive tool is meticulously designed to pull real-time fuel data directly from the French Government's public API. Whether you're looking for Gazole (Diesel), E10, E85, SP98, or SP95, Gas Price Finder quickly processes this information to highlight the lowest prices in your specified postal code area, ensuring you make smart fueling choices.
