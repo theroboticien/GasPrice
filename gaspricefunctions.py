@@ -14,6 +14,11 @@ import tkinter.messagebox
 import requests
 import json
 
+# --- Global in-memory cache for addresses ---
+# Keys will be (longitude, latitude) tuples, values will be address strings.
+# address_cache = {} # Kept commented as it was reverted per user's request.
+# -------------------------------------------
+
 
 def find_values(id, json_repr):
     results = []
@@ -29,27 +34,53 @@ def find_values(id, json_repr):
     return results
 
 def getAddressGasStation(lon, lat):
+    """
+    Retrieves the address for given longitude and latitude.
+    Args:
+        lon (str): Longitude of the gas station.
+        lat (str): Latitude of the gas station.
+    Returns:
+        str: The address of the gas station, or "Adresse non disponible" if not found.
+    """
+    # Original logic, as per user's revert request (no caching here)
     url = f'https://api-adresse.data.gouv.fr/reverse/?lon={lon}&lat={lat}'
     try:
         resp = requests.get(url)
-        resp.raise_for_status()
+        resp.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
         data = json.dumps(resp.json())
         labels = find_values('label', data)
-        return labels[0] if labels else "Adresse non disponible"
+        address = labels[0] if labels else "Adresse non disponible"
+        return address
     except requests.exceptions.RequestException as e:
         print(f"DEBUG: Error getting address for lon={lon}, lat={lat}: {e}")
         return "Adresse non disponible (erreur réseau/API)"
 
 
 def verificatioPostalCode(postal_code):
+    """
+    Verifies a postal code using the IGN API.
+    Args:
+        postal_code (str): The postal code to verify.
+    Returns:
+        tuple: (response_object, error_type_string)
+               response_object is the requests.Response object on success, None on error.
+               error_type_string is None on success, "404_NOT_FOUND" for 404 errors,
+               or "GENERIC_API_ERROR" for other request exceptions.
+    """
     url = f'https://apicarto.ign.fr/api/codes-postaux/communes/{str(postal_code)}'
     try:
         resp = requests.get(url)
-        resp.raise_for_status()
-        return resp
+        resp.raise_for_status() # This will raise HTTPError for 4xx/5xx responses
+        return resp, None # Success, no error
+    except requests.exceptions.HTTPError as e:
+        print(f"DEBUG: HTTP Error during API call for postal code {postal_code}: {e}")
+        if e.response.status_code == 404:
+            return None, "404_NOT_FOUND" # Specific error for 404
+        else:
+            return None, "GENERIC_API_ERROR" # Other HTTP errors
     except requests.exceptions.RequestException as e:
-        print(f"DEBUG: Error during API call for postal code {postal_code}: {e}")
-        return None
+        print(f"DEBUG: General Request Error during API call for postal code {postal_code}: {e}")
+        return None, "GENERIC_API_ERROR" # For network issues, timeouts, etc.
 
 
 def GasPriceDowloadandExtract():
@@ -99,7 +130,7 @@ def GasPriceVerification(postal_code, app_instance, bs_data):
     """
     if bs_data is None:
         tkinter.messagebox.showerror("Données Manquantes", "Veuillez télécharger les données des prix d'abord.")
-        app_instance.update_display(False, None) # A new update method will be needed
+        app_instance.update_display(False, None)
         return
 
     cp_orig = str(postal_code)
@@ -155,9 +186,7 @@ def GasPriceVerification(postal_code, app_instance, bs_data):
                         if current_price < best_fuel_prices[nom]['price']:
                             best_fuel_prices[nom]['price'] = current_price
                             best_fuel_prices[nom]['station_coords'] = current_station_coords
-                            # Address will be fetched later to avoid repeated API calls inside loop
-                            best_fuel_prices[nom]['address'] = None # Reset address until fetched
-
+                            best_fuel_prices[nom]['address'] = None # Will fetch address after loop
                     except ValueError:
                         pass # Ignore invalid price values
 

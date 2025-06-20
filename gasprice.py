@@ -7,14 +7,16 @@ price of Gasoline in French Gas Station
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox
-from gaspricefunctions import GasPriceDowloadandExtract, GasPriceVerification
+from gaspricefunctions import GasPriceDowloadandExtract, GasPriceVerification, verificatioPostalCode
 from FileProcessing import *
 from gasWindowsFunction import get_postal_code_from_user
+import requests
+import json
 
 class GasPriceApp:
     def __init__(self, master):
         self.master = master
-        master.geometry('600x700') # Adjusted size for more content
+        master.geometry('600x750')
         master.title('GasPrice - Cheapest Fuel Finder')
 
         self.current_postal_code = None
@@ -25,21 +27,30 @@ class GasPriceApp:
         self.postalCodeEntryLabel = ttk.Label(master, text="Non renseigné", width=25)
         self.postalCodeEntryLabel.grid(column=1, row=0, sticky=W, padx=5, pady=10)
 
+        # --- City Search Input ---
+        ttk.Label(master, text="Nom de la ville:").grid(column=0, row=1, sticky=W, padx=5, pady=5)
+        self.city_name_entry = ttk.Entry(master, width=30)
+        self.city_name_entry.grid(column=1, row=1, sticky=W, padx=5, pady=5)
+        
+        self.search_city_button = Button(master, text="Chercher par Ville", width=15, command=self.handle_city_search)
+        self.search_city_button.grid(column=1, row=2, sticky=W, padx=5, pady=5)
+
+
         # --- Fuel Type Selection ---
-        ttk.Label(master, text="Sélectionner le type de carburant:").grid(column=0, row=1, sticky=W, padx=5, pady=5)
+        ttk.Label(master, text="Sélectionner le type de carburant:").grid(column=0, row=3, sticky=W, padx=5, pady=5)
         self.selected_fuel_type = StringVar()
         self.fuel_choices = ["Tous les carburants", "Gazole", "E10", "E85", "SP98", "SP95"]
         self.fuel_type_combobox = ttk.Combobox(master, textvariable=self.selected_fuel_type,
                                                values=self.fuel_choices, state="readonly")
         self.fuel_type_combobox.set("Tous les carburants") # Default value
-        self.fuel_type_combobox.grid(column=1, row=1, sticky=W, padx=5, pady=5)
+        self.fuel_type_combobox.grid(column=1, row=3, sticky=W, padx=5, pady=5)
         self.fuel_type_combobox.bind("<<ComboboxSelected>>", self.on_fuel_type_selected)
 
 
         # --- Results Display ---
         self.fuel_types = ["Gazole", "E10", "E85", "SP98", "SP95"]
         self.fuel_display_labels = {}
-        row_offset = 3 # Starting row for fuel info, accounting for new combobox
+        row_offset = 5 # Starting row for fuel info, adjusted for new city search inputs
 
         ttk.Label(master, text="Résultats des prix les plus bas:", font=("Arial", 12, "bold")).grid(
             column=0, row=row_offset, columnspan=2, sticky=W, padx=5, pady=10)
@@ -64,19 +75,25 @@ class GasPriceApp:
         self.master.grid_columnconfigure(0, weight=1)
         self.master.grid_columnconfigure(1, weight=1)
 
+        # --- Status Message Label ---
+        self.status_label = ttk.Label(master, text="", font=("Arial", 10, "italic"), foreground="blue")
+        self.status_label.grid(row=row_offset + len(self.fuel_types)*2 + 2, column=0, columnspan=2, pady=5)
+
 
         # --- Button Section ---
         button_frame = ttk.Frame(master)
-        button_frame.grid(row=row_offset + len(self.fuel_types)*2 + 3, column=0, columnspan=2, pady=20, sticky="ew")
+    
+        # Adjusted row for button_frame to accommodate new city search inputs
+        button_frame.grid(row=row_offset + len(self.fuel_types)*2 + 4, column=0, columnspan=2, pady=20, sticky="ew")
 
-        self.GasPriceButton_verify = Button(button_frame, text="Verify Prices", width=12, height=2, command=self.handle_verify_prices)
-        self.GasPriceButton_verify.pack(side=LEFT, padx=5, expand=True)
+        self.verify_button = Button(button_frame, text="Verify Prices", width=12, height=2, command=self.handle_verify_prices)
+        self.verify_button.pack(side=LEFT, padx=5, expand=True)
 
-        self.GasPriceButton_download = Button(button_frame, text="Download Prices", width=12, height=2, command=self.handle_download_prices)
-        self.GasPriceButton_download.pack(side=LEFT, padx=5, expand=True)
+        self.download_button = Button(button_frame, text="Download Prices", width=12, height=2, command=self.handle_download_prices)
+        self.download_button.pack(side=LEFT, padx=5, expand=True)
 
-        self.postalCodeEntryButton = Button(button_frame, text="Set Postal Code", width=12, height=2, command=self.handle_postal_code_entry)
-        self.postalCodeEntryButton.pack(side=LEFT, padx=5, expand=True)
+        self.postal_code_button = Button(button_frame, text="Set Postal Code", width=12, height=2, command=self.handle_postal_code_entry)
+        self.postal_code_button.pack(side=LEFT, padx=5, expand=True)
 
         self.exit_button = Button(button_frame, text="Exit", width=12, height=2, command=master.quit)
         self.exit_button.pack(side=LEFT, padx=5, expand=True)
@@ -86,33 +103,181 @@ class GasPriceApp:
         self.last_display_data = None
 
 
-    def handle_postal_code_entry(self):
-        postal_code_input, validation_response = get_postal_code_from_user(self.master)
-
-        if postal_code_input is not None and validation_response is not None and validation_response.status_code == 200:
-            self.current_postal_code = postal_code_input
-            self.update_postal_code_display(self.current_postal_code, True)
+    def set_app_busy_state(self, is_busy, message=""):
+        """Sets the busy state of the application UI."""
+        if is_busy:
+            self.master.config(cursor="watch")
+            self.verify_button.config(state=DISABLED)
+            self.download_button.config(state=DISABLED)
+            self.postal_code_button.config(state=DISABLED)
+            self.search_city_button.config(state=DISABLED)
+            self.fuel_type_combobox.config(state=DISABLED)
+            self.city_name_entry.config(state=DISABLED)
+            self.status_label.config(text=message, foreground="blue")
         else:
-            self.current_postal_code = None
+            self.master.config(cursor="") # Reset cursor
+            self.verify_button.config(state=NORMAL)
+            self.download_button.config(state=NORMAL)
+            self.postal_code_button.config(state=NORMAL)
+            self.search_city_button.config(state=NORMAL)
+            self.fuel_type_combobox.config(state="readonly")
+            self.city_name_entry.config(state=NORMAL)
+            self.status_label.config(text="", foreground="black") # Clear message
+
+        self.master.update_idletasks() # Force UI update
+
+
+    def handle_postal_code_entry(self):
+        self.set_app_busy_state(True, "Waiting for postal code input...")
+        try:
+            postal_code_input, validation_response = get_postal_code_from_user(self.master)
+
+            if postal_code_input is not None and validation_response is not None and validation_response.status_code == 200:
+                self.current_postal_code = postal_code_input
+                self.update_postal_code_display(self.current_postal_code, True)
+            else:
+                self.current_postal_code = None
+                self.update_postal_code_display("Non renseigné", False)
+                self.clear_fuel_display() # Clear results if postal code is invalid/not set
+                self.last_display_data = None
+        finally:
+            self.set_app_busy_state(False)
+
+
+    def handle_city_search(self):
+        city_name = self.city_name_entry.get().strip()
+        if not city_name:
+            tkinter.messagebox.showwarning("Entrée Manquante", "Veuillez entrer un nom de ville.")
+            return
+
+        self.set_app_busy_state(True, f"Recherche des codes postaux pour {city_name}...")
+        try:
+            url = f"https://api-adresse.data.gouv.fr/search/?q={city_name}&type=municipality"
+            response = requests.get(url)
+            response.raise_for_status() # Raise an exception for bad status codes (4xx or 5xx)
+            data = response.json()
+
+            if not data.get('features'):
+                tkinter.messagebox.showerror("Ville Non Trouvée", f"Aucun code postal trouvé pour la ville '{city_name}'.")
+                self.update_postal_code_display("Non renseigné", False)
+                self.current_postal_code = None
+                self.clear_fuel_display()
+                return
+
+            # Extract potential postal codes
+            potential_postal_codes = []
+            for feature in data['features']:
+                properties = feature.get('properties', {})
+                # BAN API returns 'postcode' directly for municipalities
+                postcode = properties.get('postcode')
+                city_name_from_api = properties.get('city')
+                context = properties.get('context') # e.g., "75, Paris, Île-de-France"
+                
+                if postcode and city_name_from_api:
+                    # Create a unique identifier, combining city and context if available
+                    display_name = f"{city_name_from_api} ({postcode})"
+                    if context:
+                        # Extract department code (first part of context) for clearer display
+                        display_name += f", {context.split(',')[0].strip()}"
+                    
+                    potential_postal_codes.append({"postcode": postcode, "display_name": display_name})
+            
+            # Remove duplicates based on postcode, while preserving display_name
+            unique_postal_codes = {}
+            for item in potential_postal_codes:
+                if item["postcode"] not in unique_postal_codes:
+                    unique_postal_codes[item["postcode"]] = item["display_name"]
+            
+            postal_code_options = [{"postcode": pc, "display_name": dn} for pc, dn in unique_postal_codes.items()]
+
+            if len(postal_code_options) == 1:
+                # Only one result, use it directly
+                chosen_postal_code = postal_code_options[0]["postcode"]
+                self.current_postal_code = chosen_postal_code
+                self.update_postal_code_display(chosen_postal_code, True)
+                tkinter.messagebox.showinfo("Succès", f"Code postal trouvé : {chosen_postal_code}. Vous pouvez maintenant vérifier les prix.")
+            elif len(postal_code_options) > 1:
+                # Multiple results, prompt user to select
+                self.prompt_user_for_postal_code(postal_code_options)
+            else:
+                # No valid postcodes found in features
+                tkinter.messagebox.showerror("Ville Non Trouvée", f"Aucun code postal valide trouvé pour la ville '{city_name}'.")
+                self.update_postal_code_display("Non renseigné", False)
+                self.current_postal_code = None
+                self.clear_fuel_display()
+
+        except requests.exceptions.RequestException as e:
+            tkinter.messagebox.showerror("Erreur Réseau", f"Impossible de contacter le service de recherche de ville: {e}")
             self.update_postal_code_display("Non renseigné", False)
-            self.clear_fuel_display() # Clear results if postal code is invalid/not set
+            self.current_postal_code = None
+            self.clear_fuel_display()
+        except Exception as e:
+            tkinter.messagebox.showerror("Erreur", f"Une erreur inattendue est survenue: {e}")
+            self.update_postal_code_display("Non renseigné", False)
+            self.current_postal_code = None
+            self.clear_fuel_display()
+        finally:
+            self.set_app_busy_state(False)
+
+    def prompt_user_for_postal_code(self, options):
+        """Creates a new window for the user to select a postal code from multiple options."""
+        selection_window = Toplevel(self.master)
+        selection_window.title("Sélectionner un Code Postal")
+        selection_window.transient(self.master) # Make it appear on top of the main window
+        selection_window.grab_set() # Disable interaction with main window
+
+        ttk.Label(selection_window, text="Plusieurs codes postaux trouvés. Veuillez en choisir un:").pack(pady=10)
+
+        # Use a StringVar to hold the selected postal code
+        selected_option = StringVar(selection_window)
+        # Create a list of display names for the Combobox
+        option_display_names = [opt["display_name"] for opt in options]
+        selected_option.set(option_display_names[0]) # Set default to the first option
+
+        combobox = ttk.Combobox(selection_window, textvariable=selected_option, values=option_display_names, state="readonly", width=50)
+        combobox.pack(pady=5, padx=10)
+        
+        # Store original postal codes mapped to their display names for easy lookup
+        postal_code_map = {opt["display_name"]: opt["postcode"] for opt in options}
+
+        def on_select():
+            chosen_display_name = selected_option.get()
+            self.current_postal_code = postal_code_map[chosen_display_name]
+            self.update_postal_code_display(self.current_postal_code, True)
+            tkinter.messagebox.showinfo("Succès", f"Code postal sélectionné : {self.current_postal_code}. Vous pouvez maintenant vérifier les prix.")
+            selection_window.destroy()
+            self.clear_fuel_display() # Clear previous results to reflect new postal code
+
+        ttk.Button(selection_window, text="Sélectionner", command=on_select).pack(pady=10)
+        
+        # Center the new window
+        selection_window.update_idletasks()
+        x = self.master.winfo_x() + (self.master.winfo_width() // 2) - (selection_window.winfo_width() // 2)
+        y = self.master.winfo_y() + (self.master.winfo_height() // 2) - (selection_window.winfo_height() // 2)
+        selection_window.geometry(f"+{x}+{y}")
+
+        self.master.wait_window(selection_window) # Wait for the selection window to close
 
 
     def handle_download_prices(self):
-        parsed_data = GasPriceDowloadandExtract()
-        if parsed_data:
-            self.parsed_gas_data = parsed_data
-            tkinter.messagebox.showinfo("Téléchargement Réussi", "Les données des prix ont été téléchargées et chargées avec succès.")
-        else:
-            self.parsed_gas_data = None
-            tkinter.messagebox.showerror("Téléchargement Échoué", "Impossible de télécharger ou de charger les données des prix.")
-        self.clear_fuel_display() # Clear previous results after new download
-        self.last_display_data = None # Clear cached data
+        self.set_app_busy_state(True, "Téléchargement des données de prix...")
+        try:
+            parsed_data = GasPriceDowloadandExtract()
+            if parsed_data:
+                self.parsed_gas_data = parsed_data
+                # Removed: tkinter.messagebox.showinfo("Téléchargement Réussi", "Les données des prix ont été téléchargées et chargées avec succès.")
+            else:
+                self.parsed_gas_data = None
+                tkinter.messagebox.showerror("Téléchargement Échoué", "Impossible de télécharger ou de charger les données des prix.")
+            self.clear_fuel_display() # Clear previous results after new download
+            self.last_display_data = None # Clear cached data
+        finally:
+            self.set_app_busy_state(False)
 
 
     def handle_verify_prices(self):
         if self.current_postal_code is None:
-            tkinter.messagebox.showerror("Données Manquantes", "Veuillez entrer un code postal d'abord.")
+            tkinter.messagebox.showerror("Données Manquantes", "Veuillez entrer un code postal d'abord (manuellement ou via recherche de ville).")
             self.clear_fuel_display()
             self.last_display_data = None
             return
@@ -122,9 +287,13 @@ class GasPriceApp:
             self.clear_fuel_display()
             self.last_display_data = None
             return
-
-        # GasPriceVerification now calls update_display directly
-        GasPriceVerification(self.current_postal_code, self, self.parsed_gas_data)
+        
+        self.set_app_busy_state(True, "Vérification des prix et adresses...")
+        try:
+            # GasPriceVerification now calls update_display directly
+            GasPriceVerification(self.current_postal_code, self, self.parsed_gas_data)
+        finally:
+            self.set_app_busy_state(False)
 
 
     def update_postal_code_display(self, postal_code_text, is_valid=True):
@@ -164,15 +333,15 @@ class GasPriceApp:
                 else:
                     price_label.config(text=f"Prix: {price_text} €/L")
                     address_label.config(text=f"Adresse: {address_text}")
+                    # Ensure color is black for displayed items
+                    price_label.config(foreground="black")
+                    address_label.config(foreground="black")
             else:
-                # Hide or clear fuels not selected when a specific one is chosen
+                # Indicate non-displayed fuels
                 price_label.config(text="Non affiché", foreground="gray")
                 address_label.config(text="Adresse: Non affichée", foreground="gray")
         
-        # Reset foreground color for selected fuel if "Tous les carburants" was not selected
-        if selected_fuel != "Tous les carburants":
-            self.fuel_display_labels[f"{selected_fuel}_price"].config(foreground="black")
-            self.fuel_display_labels[f"{selected_fuel}_address"].config(foreground="black")
+        self.master.update_idletasks() # Force UI update
 
 
     def on_fuel_type_selected(self, event):
