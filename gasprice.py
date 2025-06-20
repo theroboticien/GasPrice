@@ -15,9 +15,9 @@ Author : Aymane
 
 # TODO: Need to give the user a choice of the fuel they want to loot for
 
-import globalVariable
-import gaspricefunctions
-import gasWindowsFunction
+#import globalVariable
+#import gaspricefunctions
+#import gasWindowsFunction
 from tkinter import *
 from gaspricefunctions import *
 from FileProcessing import *
