@@ -3,7 +3,6 @@ This file describ all the function used for the price verification process :
 + GasPriceDowloadandExtract
 + GasPriceVerification
 
-Author : Aymane
 """
 
 # TODO : correct the pricing issue when you find a second gas station that have a lower price of gazoling but still give the price of the others that come from another station

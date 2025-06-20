@@ -3,7 +3,6 @@ This file describs all the functions used for different files management :
 + deleteFile
 + extractZipFile
 
-Author : Aymane
 """
 import tkinter.messagebox
 from tkinter import *

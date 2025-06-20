@@ -3,7 +3,6 @@ This is the version 1.0 of the Gas Price program
 The aim of this program download and display the
 price of Gasoline in French Gas Station
 
-Author : Aymane
 """
 # TODO: Fill the "README.md" with the needed informations
 # TODO: Need to make the traitement of the informations faster (rechearch of the faster way) 

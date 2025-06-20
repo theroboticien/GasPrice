@@ -2,7 +2,6 @@
 This file describ all the function used for different popup event like postal code entry :
 + postalCodeEntryFunc
 
-Author : Aymane
 """
 
 import tkinter
