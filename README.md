@@ -56,7 +56,8 @@
 
 ## 🧩 Example Screenshot
 
-*(Add a screenshot of the application window here for better clarity.)*
+![image](https://github.com/user-attachments/assets/fd4fea0a-2269-43ee-8598-8caf5c2122df)
+
 
 ---
 
