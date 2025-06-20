@@ -61,18 +61,6 @@
 
 ---
 
-## 📝 Roadmap
-
-Planned improvements for future releases:
-
-- **Advanced Location Search:** Search by town or broader area, not just postal code.
-- **Database Support:** Store historical prices for trend analysis and offline access.
-- **Custom Fuel Selection:** Choose which fuel types to display.
-- **Smarter Price Comparison:** Improved algorithms for even more accurate results.
-- **UI Enhancements:** Ongoing improvements for a smoother experience.
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License.
