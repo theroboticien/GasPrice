@@ -4,8 +4,6 @@ This file describes all the functions used for the price verification process:
 + GasPriceVerification
 """
 
-# TODO : correct the pricing issue when you find a second gas station that have a lower price of gazoling but still give the price of the others that come from another station
-
 from tkinter import ttk
 from tkinter import *
 from bs4 import BeautifulSoup
@@ -91,103 +89,100 @@ def GasPriceDowloadandExtract():
 
 
 def GasPriceVerification(postal_code, app_instance, bs_data):
-        """
-        Verifies gas prices for a given postal code using already parsed data.
-        Args:
-            postal_code (str): The postal code to search for.
-            app_instance: Reference to the main application instance for UI updates.
-            bs_data (BeautifulSoup): The pre-parsed BeautifulSoup object containing gas price data.
-        """
-        if bs_data is None:
-            tkinter.messagebox.showerror("Données Manquantes", "Veuillez télécharger les données des prix d'abord.")
-            app_instance.update_price_display(False, None, None, None, None, None)
-            app_instance.update_gas_station_display("Données de prix non disponibles.")
-            return
+    """
+    Verifies gas prices for a given postal code using already parsed data,
+    finding the lowest price for each fuel type and its corresponding address.
+    Args:
+        postal_code (str): The postal code to search for.
+        app_instance: Reference to the main application instance for UI updates.
+        bs_data (BeautifulSoup): The pre-parsed BeautifulSoup object containing gas price data.
+    """
+    if bs_data is None:
+        tkinter.messagebox.showerror("Données Manquantes", "Veuillez télécharger les données des prix d'abord.")
+        app_instance.update_display(False, None) # A new update method will be needed
+        return
 
-        gasStationfound = False
-        lowest_gazole_price = float('inf')
-        best_station_data = {
-            'gazole': None,
-            'e10': None,
-            'e85': None,
-            'sp98': None,
-            'sp95': None,
-            'lon': None,
-            'lat': None
-        }
+    cp_orig = str(postal_code)
+    all_pdvs = bs_data.find_all('pdv')
 
-        cp_orig = str(postal_code)
+    if not all_pdvs:
+        tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS", "Le fichier XML ne contient aucune station service (pdv).")
+        app_instance.update_display(False, None)
+        return
 
-        all_pdvs = bs_data.find_all('pdv')
+    # Initialize data structure to hold the best price and station info for each fuel type
+    best_fuel_prices = {
+        'Gazole': {'price': float('inf'), 'station_coords': None, 'address': None},
+        'E10': {'price': float('inf'), 'station_coords': None, 'address': None},
+        'E85': {'price': float('inf'), 'station_coords': None, 'address': None},
+        'SP98': {'price': float('inf'), 'station_coords': None, 'address': None},
+        'SP95': {'price': float('inf'), 'station_coords': None, 'address': None},
+    }
+    
+    found_any_station = False
 
-        if not all_pdvs:
-            tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS", "Le fichier XML ne contient aucune station service (pdv).")
-            app_instance.update_price_display(False, None, None, None, None, None)
-            app_instance.update_gas_station_display("Aucune station trouvée dans les données.")
-            return
+    for b_name in all_pdvs:
+        cp = b_name.get('cp')
 
-        for b_name in all_pdvs:
-            cp = b_name.get('cp')
+        if cp == cp_orig:
+            found_any_station = True
+            dataLon = b_name.get('longitude')
+            datalat = b_name.get('latitude')
 
-            if cp == cp_orig:
-                gasStationfound = True
-                dataLon = b_name.get('longitude')
-                datalat = b_name.get('latitude')
+            # Normalize coordinates
+            lon = None
+            lat = None
+            if dataLon:
+                try:
+                    lon = str(float(dataLon) / 100000)
+                except ValueError:
+                    lon = dataLon[0:1] + '.' + dataLon[1:] if dataLon and len(dataLon) > 1 else dataLon
+            if datalat:
+                try:
+                    lat = str(float(datalat) / 100000)
+                except ValueError:
+                    lat = datalat[0:2] + '.' + datalat[2:] if datalat and len(datalat) > 2 else datalat
+            
+            current_station_coords = {'lon': lon, 'lat': lat}
 
-                current_station_prices = {}
-                for price_tag in b_name.find_all('prix'):
-                    nom = price_tag.get('nom')
-                    valeur = price_tag.get('valeur')
-                    if nom and valeur:
-                        current_station_prices[nom] = valeur
-
-                gazole_price_str = current_station_prices.get("Gazole")
-
-                if gazole_price_str:
+            for price_tag in b_name.find_all('prix'):
+                nom = price_tag.get('nom')
+                valeur = price_tag.get('valeur')
+                
+                if nom in best_fuel_prices and valeur:
                     try:
-                        gazole_price = float(gazole_price_str)
-                        if gazole_price < lowest_gazole_price:
-                            lowest_gazole_price = gazole_price
-                            best_station_data['gazole'] = gazole_price_str
-                            best_station_data['e10'] = current_station_prices.get('E10')
-                            best_station_data['e85'] = current_station_prices.get('E85')
-                            best_station_data['sp98'] = current_station_prices.get('SP98')
-                            best_station_data['sp95'] = current_station_prices.get('SP95')
-                            
-                            if dataLon:
-                                try:
-                                    best_station_data['lon'] = str(float(dataLon) / 100000)
-                                except ValueError:
-                                    best_station_data['lon'] = dataLon[0:1] + '.' + dataLon[1:] if dataLon and len(dataLon) > 1 else dataLon
-                            if datalat:
-                                try:
-                                    best_station_data['lat'] = str(float(datalat) / 100000)
-                                except ValueError:
-                                    best_station_data['lat'] = datalat[0:2] + '.' + datalat[2:] if datalat and len(datalat) > 2 else datalat
-                                
+                        current_price = float(valeur)
+                        if current_price < best_fuel_prices[nom]['price']:
+                            best_fuel_prices[nom]['price'] = current_price
+                            best_fuel_prices[nom]['station_coords'] = current_station_coords
+                            # Address will be fetched later to avoid repeated API calls inside loop
+                            best_fuel_prices[nom]['address'] = None # Reset address until fetched
+
                     except ValueError:
-                        pass
+                        pass # Ignore invalid price values
 
-        if not gasStationfound:
-            tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS", f"Aucune station d'essence trouvée pour le code postal {postal_code}.")
-            app_instance.update_price_display(False, None, None, None, None, None)
-            app_instance.update_gas_station_display("Aucune station trouvée dans votre secteur.")
-        elif lowest_gazole_price == float('inf'):
-            tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS", f"Aucun prix Gazole trouvé pour le code postal {postal_code}.")
-            app_instance.update_price_display(False, None, None, None, None, None)
-            app_instance.update_gas_station_display("Aucun prix Gazole trouvé pour ce secteur.")
+    if not found_any_station:
+        tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS", f"Aucune station d'essence trouvée pour le code postal {postal_code}.")
+        app_instance.update_display(False, None)
+        return
+    
+    # Fetch addresses for the best stations for each fuel type
+    display_data = {}
+    for fuel_type, data in best_fuel_prices.items():
+        if data['price'] != float('inf') and data['station_coords'] and data['station_coords']['lon'] and data['station_coords']['lat']:
+            address = getAddressGasStation(data['station_coords']['lon'], data['station_coords']['lat'])
+            display_data[fuel_type] = {
+                'price': f"{data['price']:.3f}",
+                'address': address
+            }
         else:
-            app_instance.update_price_display(
-                True,
-                best_station_data['gazole'],
-                best_station_data['e10'],
-                best_station_data['e85'],
-                best_station_data['sp98'],
-                best_station_data['sp95']
-            )
+            display_data[fuel_type] = {
+                'price': "Non disponible",
+                'address': "N/A"
+            }
 
-            if best_station_data['lon'] and best_station_data['lat']:
-                address = getAddressGasStation(best_station_data['lon'], best_station_data['lat'])
-                app_instance.update_gas_station_display(address)
-            else:
-                app_instance.update_gas_station_display("Coordonnées de la station non disponibles pour l'adresse.")
+    if not any(data['price'] != "Non disponible" for data in display_data.values()):
+        tkinter.messagebox.showerror("DATA VERIFICATION PROCESS STATUS", f"Aucun prix valide trouvé pour le code postal {postal_code}.")
+        app_instance.update_display(False, None)
+    else:
+        app_instance.update_display(True, display_data)
