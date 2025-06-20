@@ -4,12 +4,12 @@
 
 ## Table of Contents
 
-  - [Overview](https://www.google.com/search?q=%23overview)
-  - [Features](https://www.google.com/search?q=%23features)
-  - [Installation](https://www.google.com/search?q=%23installation)
-  - [Usage](https://www.google.com/search?q=%23usage)
-  - [Future Enhancements (Roadmap)](https://www.google.com/search?q=%23future-enhancements-roadmap)
-  - [License](https://www.google.com/search?q=%23license)
+  - [Overview](Overview)
+  - [Features](Features)
+  - [Installation](Installation)
+  - [Usage](Usage)
+  - [Future Enhancements (Roadmap)](Future Enhancements (Roadmap))
+  - [License](License)
 
 ## Overview
 
