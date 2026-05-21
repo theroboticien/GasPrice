@@ -26,7 +26,7 @@ def extractZipFile(webdownload):
         # 1. Determine the absolute path of the destination directory
         # We extract to the same directory as the zip file by default, 
         # or you can define a specific safe folder.
-        dest_dir = os.path.dirname(os.path.abspath(webdownload))
+        dest_dir = os.path.realpath(os.path.dirname(os.path.abspath(webdownload)))
         
         with zipfile.ZipFile(webdownload) as z:
             # 2. Validate all members before extracting
